@@ -1,5 +1,4 @@
 {
     //Available seasons: Spring, Summer, Autumn, Winter, Storm, Auto
-    //Otherwise defaults to Auto
-    "SelectedSeason": "Spring"
+    "SelectedSeason": "pring"
 }
