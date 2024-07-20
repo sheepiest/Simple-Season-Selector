@@ -47,7 +47,7 @@ class Mod implements IPostDBLoadMod
 
         // setting the db season
 
-        if (sanitisedSelectedSeason === "Auto" || null)
+        if (sanitisedSelectedSeason === "Auto" || sanitisedSelectedSeason === null)
         {
             logger.success(`${this.modName} Season Selected: Auto`) // yes, Auto is just null wearing a fancy hat
             
