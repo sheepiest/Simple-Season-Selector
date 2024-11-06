@@ -58,7 +58,7 @@ class Mod implements IPostDBLoadMod
             {
                 if (sanitisedSelectedSeason === seasonsTuple[i][1]) // if @sanitisedSelectedSeason matches string from array, spit out number
                 {
-                    weatherConfig.overrideSeason = seasonsTuple[i][1]
+                    weatherConfig.overrideSeason = seasonsTuple[i][0]
                     logger.success(`${this.modName} Season Selected: ${seasonsTuple[i][1]}`)
                     break
                 }   
@@ -72,6 +72,11 @@ class Mod implements IPostDBLoadMod
             logger.warning(`${this.modName} Did you misspell: "${modConfigJsonC.SelectedSeason}"? Defaulting to Auto`) // the perks of being a Helper is kinda knowing what issues people will have
         }
     
+        if (weatherConfig.overrideSeason === 0)
+        {
+            weatherConfig.overrideSeason = "SUMMER" // cludge fix for a 3.9 bug
+        }
+
     }
 }
 
