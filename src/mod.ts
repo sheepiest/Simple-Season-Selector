@@ -58,7 +58,7 @@ class Mod implements IPostDBLoadMod
             {
                 if (sanitisedSelectedSeason === seasonsTuple[i][1]) // if @sanitisedSelectedSeason matches string from array, spit out number
                 {
-                    weatherConfig.overrideSeason = seasonsTuple[i][0]
+                    weatherConfig.overrideSeason = seasonsTuple[i][1]
                     logger.success(`${this.modName} Season Selected: ${seasonsTuple[i][1]}`)
                     break
                 }   
