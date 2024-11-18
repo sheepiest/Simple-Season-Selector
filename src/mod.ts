@@ -31,7 +31,7 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
     {
         // code graciously provided by AcidPhantasm
         const vfs = container.resolve<VFS>("VFS");
-        const modConfigJsonC = jsonc.parse(vfs.readFile(path.resolve(__dirname, "../config/config.jsonc")));
+        const modConfigJsonC = jsonc.parse(vfs.readFile(path.resolve(__dirname, "../config.jsonc")));
         const configServer = container.resolve<ConfigServer>("ConfigServer");
         const weatherConfig : IWeatherConfig = configServer.getConfig(ConfigTypes.WEATHER);
         const logger = container.resolve<ILogger>("WinstonLogger");
