@@ -8,9 +8,9 @@
     Late Autumn = 4,
     Early Spring = 5,
     Storm = 6
+    Auto = -1
 
-    Use "Auto" to disable the mod and let SPT decide the season based on the date:
-    "SelectedSeason": "Auto"
+    Use "Auto" to disable the mod and let SPT decide the season based on the date
     */
     
     "SelectedSeason": 0
