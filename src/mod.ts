@@ -42,11 +42,10 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
 
         // setting the season in the db
 
-        if (selectedSeason === "Auto") 
+        if (selectedSeason === -1) 
         {
             logger.success(`${this.modName} Selected Season: Auto`) // yes, Auto is just null wearing a fancy hat
             //its job here is done, as the db value is preinitialised to null already
-            //no, im not checking if they spelt "auto" instead. it will default itself to null in that case anyway
         }
         else if (typeof selectedSeason === "number" && selectedSeason < 7) 
         { // if the config value is both a number and can be one of the seasons
