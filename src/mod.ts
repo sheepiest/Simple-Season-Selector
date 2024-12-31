@@ -1,13 +1,15 @@
 import path from "node:path";
-import { DependencyContainer } from "tsyringe";
-import { IPostDBLoadMod } from "@spt/models/external/IPostDBLoadMod";
-import { VFS } from "@spt/utils/VFS";
-import { ConfigServer } from "@spt/servers/ConfigServer";
+import type { DependencyContainer } from "tsyringe";
+import type { IPostDBLoadMod } from "@spt/models/external/IPostDBLoadMod";
+import type { VFS } from "@spt/utils/VFS";
+import type { ConfigServer } from "@spt/servers/ConfigServer";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
 import { jsonc } from "jsonc";
-import { ILogger } from "@spt/models/spt/utils/ILogger";
-import { IWeatherConfig } from "@spt/models/spt/config/IWeatherConfig";
-import { IPostSptLoadMod } from "@spt/models/external/IPostSptLoadMod";
+import type { ILogger } from "@spt/models/spt/utils/ILogger";
+import type { IWeatherConfig } from "@spt/models/spt/config/IWeatherConfig";
+import type { IPostSptLoadMod } from "@spt/models/external/IPostSptLoadMod";
+import type { Season } from "@spt/models/enums/Season";
+import type { ISeasonalEventConfig } from "@spt/models/spt/config/ISeasonalEventConfig";
 
 class Mod implements IPostDBLoadMod,IPostSptLoadMod
 {
@@ -25,7 +27,7 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
     STORM = 6
     */
 
-    private finalSelectedSeason: any
+    private finalSelectedSeason: Season
 
     public postDBLoad(container: DependencyContainer): void 
     {
@@ -35,6 +37,7 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
         const configServer = container.resolve<ConfigServer>("ConfigServer");
         const weatherConfig : IWeatherConfig = configServer.getConfig(ConfigTypes.WEATHER);
         const logger = container.resolve<ILogger>("WinstonLogger");
+        const seasonalEventConfig: ISeasonalEventConfig = configServer.getConfig(ConfigTypes.SEASONAL_EVENT)
 
         weatherConfig.overrideSeason = null // preinitialises the season to null just in case the user edited their weather.json
 
@@ -42,10 +45,11 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
 
         // setting the season in the db
 
-        if (selectedSeason === -1) 
+        if (selectedSeason === "Auto") 
         {
             logger.success(`${this.modName} Selected Season: Auto`) // yes, Auto is just null wearing a fancy hat
             //its job here is done, as the db value is preinitialised to null already
+            //no, im not checking if they spelt "auto" instead. it will default itself to null in that case anyway
         }
         else if (typeof selectedSeason === "number" && selectedSeason < 7) 
         { // if the config value is both a number and can be one of the seasons
@@ -57,9 +61,23 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
             logger.warning(`${this.modName} Invalid config value: ${selectedSeason}. Defaulting to Auto`) // the perks of being a Helper is kinda knowing what issues people will have
         }
 
-        // logger.success(`${this.modName} overrideSeason = ${weatherConfig.overrideSeason}`) // debug
+        // logger.success(`${this.modName} overrideSeason = ${weatherConfig.overrideSeason}`) //debug
 
         this.finalSelectedSeason = weatherConfig.overrideSeason // keeping track of what value we all agreed the overrideSeason should be
+
+
+        // Saving Christmas by breaking spacetime and adding a 13th season to the year
+        
+        const saveChristmas = modConfigJsonC.saveChristmas // grabbing the config
+        
+        if (saveChristmas === true) 
+        {
+            weatherConfig.seasonDates[4].endDay = 1
+            weatherConfig.seasonDates[4].endMonth = 13
+
+            seasonalEventConfig.events[2].endDay = 1
+            seasonalEventConfig.events[2].endMonth = 13
+        }
     }
 
     public postSptLoad(container: DependencyContainer): void 
@@ -80,8 +98,8 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
             }
             else // another mod set the value to something that doesn't make sense
             {
-                logger.warning(`${this.modName} Another mod has overridden the selected season to an invalid value: ${weatherConfig.overrideSeason}. Check your load order.`) // granted, it will not be able to detect if another mod set the value to the same one that SSS did, but there's only so much we can do
-            }
+                logger.warning(`${this.modName} Another mod has overridden the selected season to an invalid value: ${weatherConfig.overrideSeason}. Check your load order.`) 
+            } // granted, it will not be able to detect if another mod set the value to the same one that SSS did, but there's only so much we can do
         }
     }
 }

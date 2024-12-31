@@ -8,11 +8,14 @@
     Late Autumn = 4,
     Early Spring = 5,
     Storm = 6
-    Auto = -1
 
-    Use "Auto" to disable the mod and let SPT decide the season based on the date
+    Use "Auto" to disable the mod and let SPT decide the season based on the date:
+    "SelectedSeason": "Auto"
     */
     
-    "SelectedSeason": 0
+    "SelectedSeason": 9,
 
+
+    // set to true to extend both Winter and Christmas to cover the 31st of December
+    "SaveChristmas": true
 }
