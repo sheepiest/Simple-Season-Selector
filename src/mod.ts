@@ -10,8 +10,9 @@ import type { IWeatherConfig } from "@spt/models/spt/config/IWeatherConfig";
 import type { IPostSptLoadMod } from "@spt/models/external/IPostSptLoadMod";
 import type { Season } from "@spt/models/enums/Season";
 import type { ISeasonalEventConfig } from "@spt/models/spt/config/ISeasonalEventConfig";
+import type { IPreSptLoadMod } from "@spt/models/external/IPreSptLoadMod";
 
-class Mod implements IPostDBLoadMod,IPostSptLoadMod
+class Mod implements IPostDBLoadMod,IPostSptLoadMod,IPreSptLoadMod
 {
 
     private modName = "[Simple Season Selector]"
@@ -29,6 +30,28 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
 
     private finalSelectedSeason: Season
 
+    public preSptLoad(container: DependencyContainer): void 
+    {
+        const vfs = container.resolve<VFS>("VFS");
+        const modConfigJsonC = jsonc.parse(vfs.readFile(path.resolve(__dirname, "../config/config.jsonc")));
+        const configServer = container.resolve<ConfigServer>("ConfigServer");
+        const weatherConfig : IWeatherConfig = configServer.getConfig(ConfigTypes.WEATHER);
+        const seasonalEventConfig: ISeasonalEventConfig = configServer.getConfig(ConfigTypes.SEASONAL_EVENT)
+
+        // Saving Christmas by breaking spacetime and adding a 13th season to the year
+
+        const saveChristmas:boolean = modConfigJsonC.SaveChristmas // grabbing the config
+        
+        if (saveChristmas === true) 
+        {
+            weatherConfig.seasonDates[3].endDay = 1
+            weatherConfig.seasonDates[3].endMonth = 13
+                
+            seasonalEventConfig.events[1].endDay = 1
+            seasonalEventConfig.events[1].endMonth = 13
+        }        
+    }
+
     public postDBLoad(container: DependencyContainer): void 
     {
         // code graciously provided by AcidPhantasm
@@ -37,21 +60,20 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
         const configServer = container.resolve<ConfigServer>("ConfigServer");
         const weatherConfig : IWeatherConfig = configServer.getConfig(ConfigTypes.WEATHER);
         const logger = container.resolve<ILogger>("WinstonLogger");
-        const seasonalEventConfig: ISeasonalEventConfig = configServer.getConfig(ConfigTypes.SEASONAL_EVENT)
-
+       
         weatherConfig.overrideSeason = null // preinitialises the season to null just in case the user edited their weather.json
 
         const selectedSeason = modConfigJsonC.SelectedSeason // pulling the value from config
 
         // setting the season in the db
 
-        if (selectedSeason === "Auto") 
+        if (selectedSeason === -1) 
         {
             logger.success(`${this.modName} Selected Season: Auto`) // yes, Auto is just null wearing a fancy hat
             //its job here is done, as the db value is preinitialised to null already
             //no, im not checking if they spelt "auto" instead. it will default itself to null in that case anyway
         }
-        else if (typeof selectedSeason === "number" && selectedSeason < 7) 
+        else if (selectedSeason < 7) 
         { // if the config value is both a number and can be one of the seasons
             weatherConfig.overrideSeason = selectedSeason // slap the config value into the db
             logger.success(`${this.modName} Selected Season: ${this.seasonsArray[selectedSeason]}`) // report back a user readable season name from the seasonsArray
@@ -64,20 +86,7 @@ class Mod implements IPostDBLoadMod,IPostSptLoadMod
         // logger.success(`${this.modName} overrideSeason = ${weatherConfig.overrideSeason}`) //debug
 
         this.finalSelectedSeason = weatherConfig.overrideSeason // keeping track of what value we all agreed the overrideSeason should be
-
-
-        // Saving Christmas by breaking spacetime and adding a 13th season to the year
         
-        const saveChristmas = modConfigJsonC.saveChristmas // grabbing the config
-        
-        if (saveChristmas === true) 
-        {
-            weatherConfig.seasonDates[4].endDay = 1
-            weatherConfig.seasonDates[4].endMonth = 13
-
-            seasonalEventConfig.events[2].endDay = 1
-            seasonalEventConfig.events[2].endMonth = 13
-        }
     }
 
     public postSptLoad(container: DependencyContainer): void 
